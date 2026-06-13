@@ -6,6 +6,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-In%20Progress-orange)]
+[![CI](https://github.com/kesserk/t2d-risk-predictor/actions/workflows/ci.yml/badge.svg)](https://github.com/kesserk/t2d-risk-predictor/actions/workflows/ci.yml)
 
 ---
 
