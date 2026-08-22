@@ -5,40 +5,31 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-In%20Progress-orange)]
+[![Status](https://img.shields.io/badge/Status-In%20Progress-orange)]()
 [![CI](https://github.com/kesserk/t2d-risk-predictor/actions/workflows/ci.yml/badge.svg)](https://github.com/kesserk/t2d-risk-predictor/actions/workflows/ci.yml)
 
 ---
 
 ## The Problem
 
-Type 2 Diabetes (T2D) affects South Asian populations at 2–4× the rate of white European populations, yet most clinical risk models are trained on predominantly white European datasets. When these models are deployed globally, they systematically underestimate risk for South Asian patients — a calibration fairness failure with real clinical consequences.
+Type 2 Diabetes (T2D) affects South Asian populations at 2–4× the rate of white European populations, yet most clinical risk models are trained on predominantly white European datasets. When these models are deployed globally, they can systematically underestimate risk for South Asian patients — a calibration fairness failure with real clinical consequences.
 
 This project builds a **fairness-audited** T2D risk model that explicitly measures and mitigates subgroup disparities, rather than optimising for aggregate accuracy alone.
 
+**Status: work in progress.** This repo is being built in the open — the roadmap below reflects what is actually done and what isn't. Results will be published here (with full subgroup audits, not just headline metrics) once the evaluation pipeline is complete.
+
 ---
 
-## Results (Current)
+## Planned Evaluation
 
-| Metric | Value |
-|---|---|
-| Overall AUROC | **0.847** |
-| Demographic parity gap (before) | 0.18 |
-| Demographic parity gap (after mitigation) | **0.06** |
-| Parity gap reduction | **67%** |
-| pytest coverage | >85% |
-| Live demo predictions served | 200+ |
+Models are compared on discrimination **and** calibration, overall and per subgroup:
 
-### Subgroup Fairness Audit (Fairlearn MetricFrame)
+- **Models:** logistic regression baseline, XGBoost, MLP, tabular transformer
+- **Metrics:** AUROC, AUPRC, Brier score, expected calibration error (ECE)
+- **Fairness audit:** Fairlearn `MetricFrame` across ethnicity, sex, and age bands — selection rates, equalised odds, calibration-by-group — with threshold optimisation for mitigation
+- **Explainability:** SHAP global summaries and per-prediction explanations
 
-| Subgroup | AUROC | ECE | Selection Rate |
-|---|---|---|---|
-| Overall | 0.847 | 0.041 | 0.31 |
-| South Asian | TBD | TBD | TBD |
-| Female | TBD | TBD | TBD |
-| Age 45–64 | TBD | TBD | TBD |
-
-> Full subgroup results will be published once NHANES data pipeline is complete (Week 2).
+No performance numbers are reported yet; they will appear here with the notebooks that produce them.
 
 ---
 
@@ -49,41 +40,17 @@ NHANES Data
     ↓
 [src/data/] — ingestion, cleaning, feature engineering
     ↓
-[src/models/] — XGBoost baseline + logistic regression
+[src/models/] — baselines + gradient boosting + deep tabular models
     ↓
 [src/fairness/] — Fairlearn MetricFrame audit + threshold optimisation
     ↓
-[src/explain/] — SHAP global + per-prediction explanations
+[src/explain/] — SHAP global + per-prediction
     ↓
-[src/api/] — FastAPI service: /predict returns risk score + SHAP features
+[src/api/] — FastAPI service: /predict returns risk score + explanation
     ↓
-[Docker + GitHub Actions CI] — containerised, tested, auto-deployed
+[Docker + GitHub Actions CI] — containerised, tested
     ↓
-Hugging Face Spaces — live demo
-```
-
----
-
-## Repo Structure
-
-```
-t2d-risk-predictor/
-├── src/
-│   ├── data/           # NHANES ingestion, cleaning, feature engineering
-│   ├── models/         # XGBoost, logistic regression, MLflow logging
-│   ├── fairness/       # Fairlearn MetricFrame, threshold optimisation
-│   ├── explain/        # SHAP global + per-prediction
-│   └── api/            # FastAPI app, Dockerfile
-├── notebooks/
-│   ├── 01_eda.ipynb
-│   ├── 02_baseline.ipynb
-│   ├── 03_fairness_audit.ipynb
-│   └── 04_mitigation.ipynb
-├── tests/              # pytest: data validation, API tests
-├── .github/workflows/  # CI: lint + test on every push
-├── pyproject.toml
-├── Dockerfile
-└── README.md
+Deployment target: Hugging Face Spaces
 ```
 
 ---
@@ -93,12 +60,11 @@ t2d-risk-predictor/
 | Layer | Tools |
 |---|---|
 | Data | NHANES public dataset, pandas, NumPy |
-| Modelling | XGBoost, scikit-learn, MLflow |
-| Fairness | Fairlearn (MetricFrame, ThresholdOptimizer), AIF360 |
-| Interpretability | SHAP (TreeExplainer, summary plots, force plots) |
+| Modelling | scikit-learn, XGBoost, PyTorch, MLflow |
+| Fairness | Fairlearn (MetricFrame, ThresholdOptimizer) |
+| Interpretability | SHAP |
 | API | FastAPI, Uvicorn, Pydantic |
 | Infra | Docker, GitHub Actions, pytest |
-| Deploy | Hugging Face Spaces |
 
 ---
 
@@ -127,7 +93,7 @@ docker run -p 8000:8000 t2d-api
 
 ## Data Note
 
-This project uses the **NHANES** (National Health and Nutrition Examination Survey) public dataset — not the NHS Connected Bradford data used in my PhD research. NHS data cannot be shared publicly; this is a deliberate design choice that demonstrates the same fairness-audit methodology on open data.
+This project uses the **NHANES** (National Health and Nutrition Examination Survey) public dataset — not the NHS data used in my PhD research. NHS data cannot be shared publicly; this is a deliberate design choice that demonstrates the same fairness-audit methodology on open data.
 
 > NHANES data: https://www.cdc.gov/nchs/nhanes/
 
@@ -135,34 +101,31 @@ This project uses the **NHANES** (National Health and Nutrition Examination Surv
 
 ## PhD Research Context
 
-This project extends my doctoral research at the **University of Portsmouth** (2024–2027) on fairness-aware ML for T2D risk stratification in South Asian populations using NHS Connected Bradford EHR data (1M+ patients). The public NHANES implementation demonstrates the same pipeline architecture and fairness methodology.
+This project runs alongside my doctoral research at the **University of Portsmouth** (2024–present, part-time) on early detection of T2D risk in South Asian populations, with data partnerships spanning Connected Bradford and UK Biobank. The public NHANES implementation demonstrates the same pipeline architecture and fairness methodology on open data.
 
 ---
 
-## Limitations & Roadmap
+## Roadmap
 
-**Current limitations:**
-- NHANES has limited South Asian sub-sample size; results should be interpreted cautiously
-- Model not validated on independent clinical dataset
-- RAG guidance component not yet integrated
+- [x] Repo scaffold: FastAPI skeleton, CI, Docker, project structure
+- [x] NHANES EDA notebook
+- [x] Baseline model notebook
+- [ ] Full data pipeline in `src/data/`
+- [ ] Model comparison (logistic regression, XGBoost, MLP, tabular transformer)
+- [ ] Fairlearn subgroup audit (AUROC, ECE, selection rate per subgroup)
+- [ ] Threshold optimisation + SHAP explanations
+- [ ] Published results tables in this README
+- [ ] Hugging Face Spaces demo
 
-**Roadmap:**
-- [ ] Week 1: NHANES pipeline + baseline models (XGBoost, logistic regression)
-- [ ] Week 2: Fairlearn subgroup audit (AUROC, ECE, selection rate per subgroup)
-- [ ] Week 3: Threshold optimisation + SHAP explanations
-- [ ] Week 4: FastAPI + Docker + CI/CD
-- [ ] Week 5: Hugging Face Spaces deployment + full README with results
-- [ ] Week 6: Technical article published
+**Known limitations:** NHANES has a limited South Asian sub-sample; results will need cautious interpretation and the model will not be validated for clinical use.
 
 ---
 
 ## Author
 
-**Kesser Karim** — ML Engineer & PhD Researcher, Healthcare AI  
-[kesserkarim.com](https://kesserkarim.com) | [LinkedIn](https://linkedin.com/in/kesser-karim) | [GitHub](https://github.com/kesserk)
-
-PhD Candidate, University of Portsmouth | Azure DP-100 Certified
+**Kesser Karim** — PhD Researcher, Healthcare AI | University of Portsmouth
+[kesserkarim.com](https://kesserkarim.com) | [LinkedIn](https://www.linkedin.com/in/kesser-karim/) | [GitHub](https://github.com/kesserk)
 
 ---
 
-*MIT License*
+*MIT License · Not a medical device — research and educational use only.*
