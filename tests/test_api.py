@@ -12,8 +12,8 @@ from src.api.main import (
     FAIRNESS_NOTE,
     FEATURE_COLUMNS,
     HIGH_RISK_AT,
-    MODERATE_RISK_AT,
     MODEL_PATH,
+    MODERATE_RISK_AT,
     PredictRequest,
     app,
     feature_vector,
@@ -57,7 +57,7 @@ def test_risk_category_uses_api_thresholds() -> None:
 
 def test_feature_schema_matches_training_notebook() -> None:
     source = _notebook_source("02_baseline_model.ipynb")
-    match = re.search(r"FEATURES = \[(.*?)\]", source, re.S)
+    match = re.search(r"FEATURES = \[(.*?)\]", source, re.DOTALL)
     assert match is not None
     notebook_features = re.findall(r"'([A-Z0-9]+)'", match.group(1))
     assert notebook_features == list(FEATURE_COLUMNS)
